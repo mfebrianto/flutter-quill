@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -121,42 +122,56 @@ class ImageVideoUtils {
       OnImagePickCallback onImagePickCallback,
       {FilePickImpl? filePickImpl,
       WebImagePickImpl? webImagePickImpl}) async {
-    final index = controller.selection.baseOffset;
+    var index = controller.selection.baseOffset;
     final length = controller.selection.extentOffset - index;
 
-    String? imageUrl;
+    List<String>? imageUrls;
     if (kIsWeb) {
       assert(
           webImagePickImpl != null,
           'Please provide webImagePickImpl for Web '
           '(check out example directory for how to do it)');
-      imageUrl = await webImagePickImpl!(onImagePickCallback);
+      imageUrls = await webImagePickImpl!(onImagePickCallback);
     } else if (isMobile()) {
-      imageUrl = await _pickImage(imageSource, onImagePickCallback);
+      imageUrls = await _pickImage(imageSource, onImagePickCallback);
     } else {
       assert(filePickImpl != null, 'Desktop must provide filePickImpl');
-      imageUrl =
+      imageUrls =
           await _pickImageDesktop(context, filePickImpl!, onImagePickCallback);
     }
 
-    if (imageUrl != null) {
-      controller
-        ..replaceText(index, length, BlockEmbed.image(imageUrl), null)
-        ..replaceText(index + 1, 0, '\n\n', null);
+    if (imageUrls != null) {
+      imageUrls.forEach((imageUrl) {
+        controller
+          ..replaceText(index, length, BlockEmbed.image(imageUrl), null)
+          ..replaceText(index + 1, 0, '\n\n', null);
+        index = index + 1;
+      });
     }
   }
 
-  static Future<String?> _pickImage(
+  static Future<List<String>?> _pickImage(
       ImageSource source, OnImagePickCallback onImagePickCallback) async {
-    final pickedFile = await ImagePicker().pickImage(source: source);
-    if (pickedFile == null) {
+    if (source == ImageSource.camera) {
+      final pickedFile = await ImagePicker().pickImage(source: source);
+      if (pickedFile == null) {
+        return null;
+      }
+
+      return onImagePickCallback([File(pickedFile.path)]);
+    }
+
+    final pickedXFiles = await ImagePicker().pickMultiImage();
+    if (pickedXFiles == null) {
       return null;
     }
 
-    return onImagePickCallback(File(pickedFile.path));
+    final pickedFiles = pickedXFiles.map((xFile) => File(xFile.path));
+
+    return onImagePickCallback(pickedFiles.toList());
   }
 
-  static Future<String?> _pickImageDesktop(
+  static Future<List<String>?> _pickImageDesktop(
       BuildContext context,
       FilePickImpl filePickImpl,
       OnImagePickCallback onImagePickCallback) async {
@@ -164,7 +179,7 @@ class ImageVideoUtils {
     if (filePath == null || filePath.isEmpty) return null;
 
     final file = File(filePath);
-    return onImagePickCallback(file);
+    return onImagePickCallback([file]);
   }
 
   /// For video picking logic

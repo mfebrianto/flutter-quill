@@ -207,15 +207,20 @@ class _HomePageState extends State<HomePage> {
   // Renders the image picked by imagePicker from local file storage
   // You can also upload the picked image to any server (eg : AWS s3
   // or Firebase) and then return the uploaded image URL.
-  Future<String> _onImagePickCallback(File file) async {
+  Future<List<String>> _onImagePickCallback(List<File> files) async {
     // Copies the picked file from temporary cache to applications directory
     final appDocDir = await getApplicationDocumentsDirectory();
-    final copiedFile =
-        await file.copy('${appDocDir.path}/${basename(file.path)}');
-    return copiedFile.path.toString();
+
+    var copiedFiles;
+    files.forEach((file) async {
+      copiedFiles
+          .add(await file.copy('${appDocDir.path}/${basename(file.path)}'));
+    });
+
+    return copiedFiles;
   }
 
-  Future<String?> _webImagePickImpl(
+  Future<List<String>?> _webImagePickImpl(
       OnImagePickCallback onImagePickCallback) async {
     final result = await FilePicker.platform.pickFiles();
     if (result == null) {
@@ -226,7 +231,7 @@ class _HomePageState extends State<HomePage> {
     final fileName = result.files.first.name;
     final file = File(fileName);
 
-    return onImagePickCallback(file);
+    return onImagePickCallback([file]);
   }
 
   // Renders the video picked by imagePicker from local file storage

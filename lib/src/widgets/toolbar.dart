@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:i18n_extension/i18n_widget.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../models/documents/attribute.dart';
 import '../models/themes/quill_dialog_theme.dart';
@@ -37,10 +38,10 @@ export 'toolbar/toggle_check_list_button.dart';
 export 'toolbar/toggle_style_button.dart';
 export 'toolbar/video_button.dart';
 
-typedef OnImagePickCallback = Future<String?> Function(File file);
+typedef OnImagePickCallback = Future<List<String>?> Function(List<File> files);
 typedef OnVideoPickCallback = Future<String?> Function(File file);
 typedef FilePickImpl = Future<String?> Function(BuildContext context);
-typedef WebImagePickImpl = Future<String?> Function(
+typedef WebImagePickImpl = Future<List<String>?> Function(
     OnImagePickCallback onImagePickCallback);
 typedef WebVideoPickImpl = Future<String?> Function(
     OnVideoPickCallback onImagePickCallback);
@@ -257,7 +258,7 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
             controller: controller,
             onVideoPickCallback: onVideoPickCallback,
             filePickImpl: filePickImpl,
-            webVideoPickImpl: webImagePickImpl,
+            // webVideoPickImpl: webImagePickImpl,
             mediaPickSettingSelector: mediaPickSettingSelector,
             iconTheme: iconTheme,
             dialogTheme: dialogTheme,
