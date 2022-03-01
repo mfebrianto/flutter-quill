@@ -122,9 +122,6 @@ class ImageVideoUtils {
       OnImagePickCallback onImagePickCallback,
       {FilePickImpl? filePickImpl,
       WebImagePickImpl? webImagePickImpl}) async {
-    var index = controller.selection.baseOffset;
-    final length = controller.selection.extentOffset - index;
-
     List<String>? imageUrls;
     if (kIsWeb) {
       assert(
@@ -141,11 +138,16 @@ class ImageVideoUtils {
     }
 
     if (imageUrls != null) {
+      var index = controller.selection.baseOffset;
+      var length = controller.selection.extentOffset - index;
+
       imageUrls.forEach((imageUrl) {
-        controller
-          ..replaceText(index, length, BlockEmbed.image(imageUrl), null)
-          ..replaceText(index + 1, 0, '\n\n', null);
-        index = index + 1;
+        controller.replaceText(index, length, BlockEmbed.image(imageUrl), null);
+        controller.document.insert(index + 1, '\n');
+        controller.document.insert(index + 2, '\n');
+        controller.document.insert(index + 3, '\n');
+        index = controller.selection.baseOffset;
+        length = controller.selection.extentOffset - index;
       });
     }
   }
